@@ -19,12 +19,12 @@ clust_markers = FindAllMarkers(sc_data,
 clust_markers %>%
   rownames_to_column() %>% 
   as_tibble() %>% 
-  filter(cluster == 'Cluster 21')%>%
+  filter(cluster == 'Cluster 29')%>%
   filter(p_val_adj <= 0.05) %>%
   arrange(desc(avg_log2FC)) %>% 
   select(gene) %>%
   slice(1:1000) %>%
-  write_tsv('Cluster21_T1000_Marker_genes.txt')
+  write_tsv('Cluster29_T1000_Marker_genes.txt')
 
  nebula_data <- scToNeb(obj = sc_data, 
                       assay = 'RNA', 

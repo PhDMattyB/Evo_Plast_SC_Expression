@@ -36,6 +36,12 @@ clust_markers %>%
                                'cells_id'), 
                       offset = 'nCount_RNA')
  
-# df = model.matrix(~seurat_clusters+cells_id, 
-#                   data = nebula_data$pred)
+df = model.matrix(~seurat_clusters + Temp + Ecotype + seurat_clusters*Temp + seurat_clusters*Ecotype + Temp*Ecotype + seurat_clusters*Temp*Ecotype,
+                  data = nebula_data$pred)
 
+head(df)
+dim(df)
+re = nebula(nebula_data$count, 
+            nebula_data$id, 
+            pred = df, 
+            ncore = 1)

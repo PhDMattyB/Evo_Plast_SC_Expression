@@ -34,13 +34,19 @@ sc_data[['umap']]@cell.embeddings %>%
   rowid_to_column() %>% 
   write_csv('SingleCell_Umap_Projections.csv')
 
-sc_data2 = FindNeighbors(sc_data, dims = 1:10)
+sc_data2 = RunPCA(sc_data)
+sc_data2 = FindNeighbors(sc_data2)
 sc_data2 = FindClusters(sc_data2)
 # clust_markers = FindAllMarkers(neighbors,
 #                                only.pos = T, 
 #                                resolution = 0.5)
 
-sc_data2 = RunUMAP(sc_data2, dims = 1:10)
+ElbowPlot(sc_data2, ndims = 50)
+sc_data2 = JackStraw(sc_data2, num.replicate = 100)
+sc_data2 = ScoreJackStraw(sc_data2, dims = 1:50)
+JackStrawPlot(sc_data2, dims = 1:50)
+
+sc_data2 = RunUMAP(sc_data2, dims = 1:50)
 
 clust_markers = FindAllMarkers(sc_data2,
                                only.pos = T,
@@ -58,6 +64,17 @@ clust_markers %>%
 #   select(gene) %>%
 #   slice(1:1000) %>%
   write_tsv('SingleCell_Clusters_All_Markers_UMAP.txt')
+
+FeaturePlot(sc_data2, 
+            features = c('pks1'))
+
+
+DimPlot(sc_data2, 
+        reduction = 'umap', 
+        label = F)
+
+# Nebula model ------------------------------------------------------------
+
 
  nebula_data <- scToNeb(obj = sc_data, 
                       assay = 'RNA', 

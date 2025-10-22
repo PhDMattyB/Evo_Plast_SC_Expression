@@ -11,20 +11,53 @@ sc_data@meta.data
 
 umap = DimPlot(sc_data, 
                reduction = 'umap', 
-               label = T)
+               label = F)
 
-# clust_markers = FindAllMarkers(sc_data, 
-#                                only.pos = T)
-# 
-# clust_markers %>%
-#   rownames_to_column() %>% 
-#   as_tibble() %>% 
+VizDimLoadings(sc_data, dims = 1:2, reduction = 'umap')
+
+sc_data@reductions$umap
+sc_data@reductions
+sc_data@meta.data %>% 
+  as_tibble() %>% 
+  write_tsv('SingleCell_Umap_metadata.txt')
+sc_data@assays$RNA
+
+sc_data@active.ident
+
+sc_data[['umap']]@feature.loadings
+sc_data[['umap']]@key
+
+sc_data@reductions
+sc_data[['umap']]@cell.embeddings %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>% 
+  rowid_to_column() %>% 
+  write_csv('SingleCell_Umap_Projections.csv')
+
+sc_data2 = FindNeighbors(sc_data, dims = 1:10)
+sc_data2 = FindClusters(sc_data2)
+# clust_markers = FindAllMarkers(neighbors,
+#                                only.pos = T, 
+#                                resolution = 0.5)
+
+sc_data2 = RunUMAP(sc_data2, dims = 1:10)
+
+clust_markers = FindAllMarkers(sc_data2,
+                               only.pos = T,
+                               resolution = 0.5, 
+                               min.pct = 0.25, 
+                               logfc.threshold = 0.25)
+
+
+clust_markers %>%
+  # rownames_to_column() %>%
+  as_tibble() %>%
 #   filter(cluster == 'Cluster 29')%>%
-#   filter(p_val_adj <= 0.05) %>%
-#   arrange(desc(avg_log2FC)) %>% 
+  filter(p_val_adj <= 0.05) %>%
+  # arrange(desc(avg_log2FC)) %>%
 #   select(gene) %>%
 #   slice(1:1000) %>%
-#   write_tsv('Cluster29_T1000_Marker_genes.txt')
+  write_tsv('SingleCell_Clusters_All_Markers_UMAP.txt')
 
  nebula_data <- scToNeb(obj = sc_data, 
                       assay = 'RNA', 
@@ -41,7 +74,13 @@ df = model.matrix(~seurat_clusters + Temp + Ecotype + seurat_clusters*Temp + seu
 
 head(df)
 dim(df)
+
+# data_grouped = group_cell(count = nebula_data$count, 
+#                           id = nebula_data$id, 
+#                           pred = df)
+
 re = nebula(nebula_data$count, 
             nebula_data$id, 
             pred = df, 
-            ncore = 1)
+            ncore = 8)
+   
